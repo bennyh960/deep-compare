@@ -1,16 +1,18 @@
 {
-  "name": "deep-compare",
+  "name": "deep-obj-compare",
   "description": "A lightweight utility for deep comparison of JavaScript objects utilizing typescript with detailed error reporting and path tracking",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/bennyh960/deep-compare.git"
   },
   "homepage": "https://github.com/bennyh960/deep-compare.git",
-  "version": "0.0.6",
+  "version": "0.0.1",
   "author": "bennyh960",
   "license": "MIT",
   "keywords": [
+    "deep-obj-compare",
     "deep-compare",
+    "deep objects compare",
     "deep-equal",
     "object-comparison",
     "diff",

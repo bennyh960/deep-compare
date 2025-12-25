@@ -1,4 +1,4 @@
-# deep-compare
+# deep-obj-compare
 
 A lightweight TypeScript utility for deep comparison of JavaScript objects with detailed error
 reporting and path tracking.
@@ -8,7 +8,7 @@ reporting and path tracking.
 ## Installation
 
 ```bash
-npm install deep-compare
+npm install deep-obj-compare
 ```
 
 ## Features
@@ -24,7 +24,7 @@ npm install deep-compare
 ## Quick Start
 
 ```typescript
-import { compareObjects } from 'deep-compare';
+import { compareObjects } from 'deep-obj-compare';
 
 const expected = { name: 'Alice', age: 30, address: { city: 'NYC' } };
 const actual = { name: 'Alice', age: 30, address: { city: 'LA' } };
