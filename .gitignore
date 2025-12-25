@@ -1,0 +1,15 @@
+node_modules/
+
+dist/
+build/
+
+temp/
+
+data/
+
+packed_versions_tgz/
+**.tgz
+
+.env.db
+
+changelogs.commits.md

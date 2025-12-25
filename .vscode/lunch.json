@@ -1,0 +1,35 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Launch via NPM",
+      "request": "launch",
+      "runtimeArgs": ["run", "dev"],
+      "runtimeExecutable": "npm",
+      "program": "${workspaceFolder}/src/index.ts",
+      "skipFiles": ["<node_internals>/**"],
+      "type": "node",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Launch via NPM - Playground",
+      "request": "launch",
+      "runtimeArgs": ["run", "dev:playground"],
+      "runtimeExecutable": "npm",
+      "program": "${workspaceFolder}/src/playground.ts",
+      "skipFiles": ["<node_internals>/**"],
+      "type": "node",
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch API",
+      "program": "${workspaceFolder}/src/index.ts",
+      "skipFiles": ["<node_internals>/**", "**/*.test.ts"],
+      "preLaunchTask": "tsc: build - tsconfig.json",
+      "outFiles": ["${workspaceFolder}/dist/**/*.js"],
+      "console": "integratedTerminal"
+    }
+  ]
+}
