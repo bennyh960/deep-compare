@@ -47,9 +47,7 @@
     "build:watch": "tsc --watch",
     "release": "standard-version",
     "start": "npm run build && node dist/index.js",
-    "deploy": "npm run build && node ./scripts/check-tgz.js && npm run release  && npm publish && git push",
-    "deployLocal": "node ./scripts/deploy-local.js",
-    "deploy:quick": "npm run build && npm version patch && npm publish",
+    "deploy": "npm run build && npm run release  && npm publish && git push",
     "test": "jest"
   },
   "devDependencies": {
