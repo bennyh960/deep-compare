@@ -47,7 +47,7 @@
     "build:watch": "tsc --watch",
     "release": "standard-version",
     "start": "npm run build && node dist/index.js",
-    "deploy": "npm run build && npm run release  && npm publish && git push",
+    "deploy": "npm run release  && npm publish && git push",
     "test": "jest"
   },
   "devDependencies": {
