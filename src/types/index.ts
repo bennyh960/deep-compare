@@ -6,6 +6,8 @@ export interface ComparisonConfig {
   nameA: string;
   /** Display name for the second object in error messages */
   nameB: string;
+  /** Display name for the second object in error messages */
+  log?: () => void;
 }
 
 /**
@@ -40,7 +42,7 @@ export interface ComparisonError {
   /** The path to the property where the mismatch occurred */
   path: string;
   /** The type of error that occurred */
-  type: ComparisonErrorType | string;
+  type: ComparisonErrorType; //| string;
   /** Dynamic properties for the compared values */
   [key: string]: unknown;
 }

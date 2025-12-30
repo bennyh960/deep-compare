@@ -93,29 +93,6 @@ export function detectMissingValues(arrA: string[], arrB: string[]): MissingValu
 }
 
 /**
- * Formats missing values into a human-readable string.
- * @param arrA - First array of keys
- * @param arrB - Second array of keys
- * @param nameA - Display name for the first object
- * @param nameB - Display name for the second object
- * @returns Formatted string describing missing values
- */
-export function formatMissingValues(arrA: string[], arrB: string[], nameA: string, nameB: string): string {
-  const { missingInA, missingInB } = detectMissingValues(arrA, arrB);
-  const parts: string[] = [];
-
-  if (missingInA.length > 0) {
-    parts.push(`[${missingInA.join(', ')}] missing in ${nameA}`);
-  }
-
-  if (missingInB.length > 0) {
-    parts.push(`[${missingInB.join(', ')}] missing in ${nameB}`);
-  }
-
-  return parts.join('; ');
-}
-
-/**
  * Builds a path string for nested properties.
  * @param basePath - The current path
  * @param key - The key to append

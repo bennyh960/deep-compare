@@ -14,7 +14,6 @@
 
 // Re-export main comparison function
 export { compareObjects } from './compare';
-console.log('Deep Compare module loaded.');
 
 // Re-export types for consumers
 export type { ComparisonError, ComparisonConfig, ComparableValue, MissingValuesResult } from './types';

@@ -7,17 +7,19 @@ import { isDate, isValidDate, isRegExp, isPlainObject, isNull, isUndefined, isNa
  */
 function createError(
   path: string,
-  type: ComparisonErrorType | string,
+  type: ComparisonErrorType,
   valueA: unknown,
   valueB: unknown,
   nameA: string,
-  nameB: string
+  nameB: string,
+  message: string
 ): ComparisonError {
   return {
     path: path || '(root)',
     type,
     [nameA]: valueA,
     [nameB]: valueB,
+    message,
   };
 }
 
@@ -33,6 +35,7 @@ function compareDates(dateA: Date, dateB: Date, path: string, nameA: string, nam
   // Check for invalid dates
   if (!isValidA || !isValidB) {
     if (isValidA !== isValidB) {
+      const faultySide = !isValidA ? nameA : nameB;
       errors.push(
         createError(
           path,
@@ -40,7 +43,8 @@ function compareDates(dateA: Date, dateB: Date, path: string, nameA: string, nam
           isValidA ? dateA.toISOString() : 'Invalid Date',
           isValidB ? dateB.toISOString() : 'Invalid Date',
           nameA,
-          nameB
+          nameB,
+          `Comparison failed: ${faultySide} contains an invalid Date object`
         )
       );
     }
@@ -49,7 +53,8 @@ function compareDates(dateA: Date, dateB: Date, path: string, nameA: string, nam
 
   // Compare timestamps
   if (dateA.getTime() !== dateB.getTime()) {
-    errors.push(createError(path, ComparisonErrorType.DATE_MISMATCH, dateA.toISOString(), dateB.toISOString(), nameA, nameB));
+    const message = `Dates do not match`;
+    errors.push(createError(path, ComparisonErrorType.DATE_MISMATCH, dateA.toISOString(), dateB.toISOString(), nameA, nameB, message));
   }
 
   return errors;
@@ -61,8 +66,20 @@ function compareDates(dateA: Date, dateB: Date, path: string, nameA: string, nam
 function compareRegExp(regexA: RegExp, regexB: RegExp, path: string, nameA: string, nameB: string): ComparisonError[] {
   const errors: ComparisonError[] = [];
 
-  if (regexA.toString() !== regexB.toString()) {
-    errors.push(createError(path, ComparisonErrorType.REGEX_MISMATCH, regexA.toString(), regexB.toString(), nameA, nameB));
+  const strA = regexA.toString();
+  const strB = regexB.toString();
+
+  if (strA !== strB) {
+    let message = 'Regular expressions do not match';
+
+    // Provide more detail if the patterns are the same but flags differ
+    if (regexA.source === regexB.source && regexA.flags !== regexB.flags) {
+      message = `Regex patterns are identical, but flags differ: /${regexA.flags}/ vs /${regexB.flags}/`;
+    } else if (regexA.source !== regexB.source) {
+      message = `Regex patterns are different: ${strA} vs ${strB}`;
+    }
+
+    errors.push(createError(path, ComparisonErrorType.REGEX_MISMATCH, strA, strB, nameA, nameB, message));
   }
 
   return errors;
@@ -77,9 +94,8 @@ function compareArrays(arrA: unknown[], arrB: unknown[], path: string, config: C
 
   // Report length mismatch
   if (arrA.length !== arrB.length) {
-    errors.push(
-      createError(path, ComparisonErrorType.ARRAY_LENGTH_MISMATCH, `length: ${arrA.length}`, `length: ${arrB.length}`, nameA, nameB)
-    );
+    const message = `Array length mismatch: ${nameA}.${path} has ${arrA.length} elements, but ${nameB}.${path} has ${arrB.length} elements`;
+    errors.push(createError(path, ComparisonErrorType.ARRAY_LENGTH_MISMATCH, arrA.length, arrB.length, nameA, nameB, message));
   }
 
   // Compare elements up to the minimum length
@@ -109,8 +125,7 @@ function comparePlainObjects(
 
   // Report key length mismatch with details
   if (keysA.length !== keysB.length) {
-    const missingDetails = formatMissingValues(keysA, keysB, nameA, nameB);
-    errors.push(createError(path, `${ComparisonErrorType.KEY_LENGTH_MISMATCH} (${missingDetails})`, keysA, keysB, nameA, nameB));
+    errors.push(createError(path, ComparisonErrorType.KEY_LENGTH_MISMATCH, keysA.length, keysB.length, nameA, nameB, `Key count mismatch`));
   }
 
   // Get all unique keys from both objects
@@ -123,12 +138,14 @@ function comparePlainObjects(
 
     // Check for missing keys
     if (!hasKeyA) {
-      errors.push(createError(keyPath, `${ComparisonErrorType.MISSING_KEY} in ${nameA}`, undefined, objB[key], nameA, nameB));
+      const message = `Property "${key}" is missing in ${nameA}.${keyPath} but exists in ${nameB}.${keyPath}`;
+      errors.push(createError(keyPath, ComparisonErrorType.MISSING_KEY, undefined, objB[key], nameA, nameB, message));
       continue;
     }
 
     if (!hasKeyB) {
-      errors.push(createError(keyPath, `${ComparisonErrorType.MISSING_KEY} in ${nameB}`, objA[key], undefined, nameA, nameB));
+      const message = `Property "${key}" is missing in ${nameB}.${keyPath} but exists in ${nameA}.${keyPath}`;
+      errors.push(createError(keyPath, ComparisonErrorType.MISSING_KEY, objA[key], undefined, nameA, nameB, message));
       continue;
     }
 
@@ -145,18 +162,24 @@ function comparePlainObjects(
 function comparePrimitives(valueA: unknown, valueB: unknown, path: string, nameA: string, nameB: string): ComparisonError[] {
   const errors: ComparisonError[] = [];
 
+  // 1. Handle NaN specially (NaN !== NaN in JavaScript)
+  const isNaNA = isNaNValue(valueA);
+  const isNaNB = isNaNValue(valueB);
+
   // Handle NaN specially (NaN !== NaN in JavaScript)
-  if (isNaNValue(valueA) && isNaNValue(valueB)) {
+  if (isNaNA && isNaNB) {
     return errors; // Both NaN, considered equal
   }
 
-  if (isNaNValue(valueA) || isNaNValue(valueB)) {
-    errors.push(createError(path, ComparisonErrorType.NAN_MISMATCH, valueA, valueB, nameA, nameB));
+  if (isNaNA || isNaNB) {
+    const nanSide = isNaNA ? nameA : nameB;
+    const message = `Value mismatch: ${nanSide}.${path} is NaN (Not-a-Number) while the other side is a valid number or type`;
+    errors.push(createError(path, ComparisonErrorType.NAN_MISMATCH, valueA, valueB, nameA, nameB, message));
     return errors;
   }
 
   if (valueA !== valueB) {
-    errors.push(createError(path, ComparisonErrorType.VALUE_MISMATCH, valueA, valueB, nameA, nameB));
+    errors.push(createError(path, ComparisonErrorType.VALUE_MISMATCH, valueA, valueB, nameA, nameB, 'Value Mismatch'));
   }
 
   return errors;
@@ -171,7 +194,10 @@ function compareValues(valueA: ComparableValue, valueB: ComparableValue, path: s
   // Handle undefined
   if (isUndefined(valueA) || isUndefined(valueB)) {
     if (isUndefined(valueA) !== isUndefined(valueB)) {
-      return [createError(path, ComparisonErrorType.UNDEFINED_MISMATCH, valueA, valueB, nameA, nameB)];
+      const missingSide = isUndefined(valueA) ? nameA : nameB;
+      const presentSide = isUndefined(valueA) ? nameB : nameA;
+      const message = `Value is undefined in ${missingSide} but defined in ${presentSide}`;
+      return [createError(path, ComparisonErrorType.UNDEFINED_MISMATCH, valueA, valueB, nameA, nameB, message)];
     }
     return [];
   }
@@ -179,14 +205,15 @@ function compareValues(valueA: ComparableValue, valueB: ComparableValue, path: s
   // Handle null
   if (isNull(valueA) || isNull(valueB)) {
     if (isNull(valueA) !== isNull(valueB)) {
-      return [createError(path, ComparisonErrorType.NULL_MISMATCH, valueA, valueB, nameA, nameB)];
+      const message = isNull(valueA) ? `${nameA} is null, but ${nameB} has a value` : `${nameA} has a value, but ${nameB} is null`;
+      return [createError(path, ComparisonErrorType.NULL_MISMATCH, valueA, valueB, nameA, nameB, message)];
     }
     return [];
   }
 
   // Handle type mismatch (after null/undefined checks)
   if (typeof valueA !== typeof valueB) {
-    return [createError(path, ComparisonErrorType.TYPE_MISMATCH, valueA, valueB, nameA, nameB)];
+    return [createError(path, ComparisonErrorType.TYPE_MISMATCH, valueA, valueB, nameA, nameB, 'Type mismatch')];
   }
 
   // Handle Date objects
@@ -196,7 +223,7 @@ function compareValues(valueA: ComparableValue, valueB: ComparableValue, path: s
 
   // Handle Date vs non-Date object mismatch
   if (isDate(valueA) || isDate(valueB)) {
-    return [createError(path, ComparisonErrorType.TYPE_MISMATCH, valueA, valueB, nameA, nameB)];
+    return [createError(path, ComparisonErrorType.TYPE_MISMATCH, valueA, valueB, nameA, nameB, 'Type mismatch')];
   }
 
   // Handle RegExp objects
@@ -206,7 +233,7 @@ function compareValues(valueA: ComparableValue, valueB: ComparableValue, path: s
 
   // Handle RegExp vs non-RegExp object mismatch
   if (isRegExp(valueA) || isRegExp(valueB)) {
-    return [createError(path, ComparisonErrorType.TYPE_MISMATCH, valueA, valueB, nameA, nameB)];
+    return [createError(path, ComparisonErrorType.TYPE_MISMATCH, valueA, valueB, nameA, nameB, 'Type mismatch')];
   }
 
   // Handle arrays
@@ -216,7 +243,7 @@ function compareValues(valueA: ComparableValue, valueB: ComparableValue, path: s
 
   // Handle array vs non-array mismatch
   if (Array.isArray(valueA) || Array.isArray(valueB)) {
-    return [createError(path, ComparisonErrorType.TYPE_MISMATCH, valueA, valueB, nameA, nameB)];
+    return [createError(path, ComparisonErrorType.TYPE_MISMATCH, valueA, valueB, nameA, nameB, 'Type mismatch')];
   }
 
   // Handle plain objects
