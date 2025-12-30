@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 0.0.4 (2025-12-30)
+
+
+### Features
+
+* **errors:** add descriptive human-readable messages to comparison errors ([bec5f68](https://github.com/bennyh960/deep-compare/commit/bec5f687e73d11df0255cd7e1b31c61bafada20e))
+
 ### [0.0.3](https://github.com/bennyh960/deep-compare/compare/v0.0.7...v0.0.3) (2025-12-30)
 
 ### [0.0.7](https://github.com/bennyh960/deep-compare/compare/v0.0.6...v0.0.7) (2025-12-30)
