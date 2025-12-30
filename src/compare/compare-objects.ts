@@ -1,6 +1,6 @@
 import type { ComparableValue, ComparisonConfig, ComparisonError } from '../types';
 import { ComparisonErrorType, DEFAULT_CONFIG } from '../types';
-import { isDate, isValidDate, isRegExp, isPlainObject, isNull, isUndefined, isNaNValue, formatMissingValues, buildPath } from '../utils';
+import { isDate, isValidDate, isRegExp, isPlainObject, isNull, isUndefined, isNaNValue, buildPath } from '../utils';
 
 /**
  * Creates a comparison error object with the given details.

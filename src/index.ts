@@ -31,7 +31,6 @@ export {
   isUndefined,
   isNaNValue,
   detectMissingValues,
-  formatMissingValues,
   buildPath,
   getTypeName,
 } from './utils';

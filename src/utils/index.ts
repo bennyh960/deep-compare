@@ -7,7 +7,6 @@ export {
   isUndefined,
   isNaNValue,
   detectMissingValues,
-  formatMissingValues,
   buildPath,
   getTypeName,
 } from './type-guards';
