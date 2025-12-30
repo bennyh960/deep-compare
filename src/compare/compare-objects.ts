@@ -278,8 +278,8 @@ function compareValues(valueA: ComparableValue, valueB: ComparableValue, path: s
 export function compareObjects(
   objA: ComparableValue,
   objB: ComparableValue,
-  path = '',
-  config: ComparisonConfig = DEFAULT_CONFIG
+  config: ComparisonConfig = DEFAULT_CONFIG,
+  path = ''
 ): ComparisonError[] {
   return compareValues(objA, objB, path, config);
 }

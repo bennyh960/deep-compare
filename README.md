@@ -32,7 +32,7 @@ const actual = { name: 'Alice', age: 30, address: { city: 'LA' } };
 const errors = compareObjects(expected, actual);
 // Returns:
 // [
-//   { path: 'address.city', type: 'Value Mismatch', expected: 'NYC', actual: 'LA' }
+//   { path: 'address.city', type: 'Value Mismatch', expected: 'NYC', actual: 'LA' , message: 'Value Mismatch'}
 // ]
 ```
 
@@ -66,7 +66,7 @@ const expected = { items: [1, 2, 3] };
 const actual = { items: [1, 2, 4] };
 
 compareObjects(expected, actual);
-// [{ path: 'items[2]', type: 'Value Mismatch', expected: 3, actual: 4 }]
+// [{ path: 'items[2]', type: 'Value Mismatch', expected: 3, actual: 4 ,message:'Value Mismatch'}]
 ```
 
 ### Custom Naming
@@ -76,20 +76,19 @@ const source = { status: 'active' };
 const target = { status: 'pending' };
 
 compareObjects(source, target, { nameA: 'source', nameB: 'target' });
-// [{ path: 'status', type: 'Value Mismatch', source: 'active', target: 'pending' }]
+// [{ path: 'status', type: 'Value Mismatch', source: 'active', target: 'pending',message:'Value Mismatch' }]
 ```
 
 ### Missing Keys Detection
 
 ```typescript
 const expected = { x: 1, y: 2 };
-const actual = { x: 1, z: 3 };
+const actual = { x: 1 };
 
 compareObjects(expected, actual);
 // [
-//   { path: '(root)', type: 'Key Length Mismatch ([z] missing in expected, [y] missing in actual)', ... },
-//   { path: 'y', type: 'Missing Key in actual', expected: 2, actual: undefined },
-//   { path: 'z', type: 'Missing Key in expected', expected: undefined, actual: 3 }
+//   { path: '(root)', type: 'Key Length Mismatch' ,expected:2, actual:1 ,message: 'Key count mismatch'},
+//   { path: 'y', type: 'Missing Key', expected: 2, actual: undefined, message: 'Property "y" is missing in actual.y but exists in expected.y' },
 // ]
 ```
 
@@ -100,7 +99,7 @@ const expected = { created: new Date('2024-01-01') };
 const actual = { created: new Date('2024-06-01') };
 
 compareObjects(expected, actual);
-// [{ path: 'created', type: 'Date Mismatch', expected: '2024-01-01T00:00:00.000Z', actual: '2024-06-01T00:00:00.000Z' }]
+// [{ path: 'created', type: 'Date Mismatch', expected: '2024-01-01T00:00:00.000Z', actual: '2024-06-01T00:00:00.000Z',message: 'Dates do not match' }]
 ```
 
 ## Error Types
